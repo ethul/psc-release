@@ -30,6 +30,8 @@ var scmp = require('scmp');
 
 var del = require('del');
 
+var spinner = require('char-spinner');
+
 var options = { github: { owner: 'purescript', repo: 'purescript' }
               , os: { darwin: 'macos', linux: 'linux64' }
               , platform: os.platform()
@@ -164,13 +166,16 @@ function cleanup(opts, cb) {
 function install(opts, cb) {
   var o = lodash.extend({}, options, opts);
   if (lodash.isEmpty(o.os[o.platform])) throw new Error('unsupported platform');
+  var interval = spinner();
   release(o).
   then(assets(o)).
   then(readsha(o)).
   then(untar(o)).
   then(chmod(o)).
-  then(function(){cb()},
-       function(e){ console.log(error(e));
+  then(function(){ clearInterval(interval);
+                   cb() },
+       function(e){ clearInterval(interval);
+                    console.log(error(e));
                     cleanup(o, cb); });
 }
 
