@@ -153,4 +153,4 @@ function install(opts, cb) {
                     cleanup(o, cb); });
 }
 
-module.exports = { install: install };
+module.exports = install;
