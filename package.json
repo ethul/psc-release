@@ -1,5 +1,5 @@
 {
-  "name": "psc-releaser",
+  "name": "psc-release",
   "version": "0.0.0",
   "description": "Programmatically access purescript binary releases.",
   "main": "index.js",
@@ -8,7 +8,7 @@
     "email": "thul.eric@gmail.com"
   },
   "license": "MIT",
-  "repository": "ethul/psc-releaser",
+  "repository": "ethul/psc-release",
   "keywords": [
     "purescript"
   ],

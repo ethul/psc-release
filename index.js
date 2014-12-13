@@ -35,9 +35,9 @@ var options = { github: { owner: 'purescript', repo: 'purescript' }
               , platform: os.platform()
               , bin: path.join('node_modules', '.bin')
               , del: ['psc', 'psc-docs', 'psc-make', 'psci']
-              , temp: 'psc-releaser'
+              , temp: 'psc-release'
               , enc: 'utf-8'
-              , tag: 'v0.6.2' };
+              , tag: null };
 
 var gh = new github({version: '3.0.0', protocol: 'https'});
 
@@ -116,18 +116,41 @@ function untar(opts) {
   };
 }
 
-function cleanup(opts) {
+function chmod(opts) {
+  return function(){
+    return promise.all(lodash.map(opts.del, function(bin){
+      var file = path.join(opts.bin, bin);
+      return new promise(function(res, rej){
+        fs.chmod(file, '755', function(e){
+          if (e) rej(e);
+          else res();
+        });
+      });
+    }));
+  };
+}
+
+function cleanup(opts, cb) {
   del(lodash.map(opts.del,
                  function(a){return path.join(opts.bin, a)}), function(e, res){
-    if (e) console.log(error(e));
+    if (e) console.log(error(e))
     else console.log(info('Cleaned up: ' + res));
+    cb(e);
   });
 }
 
-release(options).
-then(assets(options)).
-then(readsha(options)).
-then(untar(options)).
-then(function(){console.log('done');},
-     function(e){ console.log(error(e));
-                  cleanup(options); });
+function install(opts, cb) {
+  var o = lodash.extend({}, options, opts);
+  if (lodash.isEmpty(o.tag)) throw new Error('tag is required');
+  if (lodash.isEmpty(o.os[o.platform])) throw new Error('unsupported platform');
+  release(o).
+  then(assets(o)).
+  then(readsha(o)).
+  then(untar(o)).
+  then(chmod(o)).
+  then(function(){cb()},
+       function(e){ console.log(error(e));
+                    cleanup(o, cb); });
+}
+
+module.exports = { install: install };
