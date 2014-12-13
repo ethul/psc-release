@@ -42,14 +42,36 @@ var options = { github: { owner: 'purescript', repo: 'purescript' }
 var gh = new github({version: '3.0.0', protocol: 'https'});
 
 function release(opts) {
+  var find = function(res, rej, releases){
+    var release = lodash.find(releases,
+                              function(a){return a.tag_name === opts.tag;});
+    if (!release) {
+      if (!gh.hasNextPage(releases.meta.link)) {
+        rej('Release not found for tag: ' + opts.tag);
+      }
+      else {
+        gh.getNextPage(releases.meta.link, function(e, releases){
+          if (e) rej(e);
+          else find(res, rej, releases);
+        });
+      }
+    }
+    else {
+      res(release);
+    }
+  };
   return new promise(function(res, rej){
     gh.releases.listReleases(opts.github, function(e, releases){
       if (e) rej(e);
       else {
-        var release = lodash.find(releases,
-                                  function(a){return a.tag_name === opts.tag;});
-        if (!release) rej('No purescript release found for tag: ' + opts.tag);
-        else res(release);
+        if (lodash.isEmpty(opts.tag)) {
+          var head = lodash.head(releases);
+          if (!(head && head.tag_name)) rej('Latest release found');
+          else res(head);
+        }
+        else {
+          find(res, rej, releases)
+        }
       }
     });
   });
@@ -141,7 +163,6 @@ function cleanup(opts, cb) {
 
 function install(opts, cb) {
   var o = lodash.extend({}, options, opts);
-  if (lodash.isEmpty(o.tag)) throw new Error('tag is required');
   if (lodash.isEmpty(o.os[o.platform])) throw new Error('unsupported platform');
   release(o).
   then(assets(o)).
