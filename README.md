@@ -1,1 +1,1 @@
-# psc-releaser
+# psc-release
