@@ -13,9 +13,9 @@ $ npm install psc-release
 ```js
 var pscRelease = require('psc-release');
 
-pscRelease({tag: 'v0.6.2'}, function(e){
+pscRelease({}, function(e){
   if (e) console.log(e);
-  else console.log('done');
+  else console.log('Latest release installed.');
 });
 ```
 
@@ -23,19 +23,19 @@ pscRelease({tag: 'v0.6.2'}, function(e){
 
 ### pscRelease(options, callback)
 
-Options may contain values specified below. However, the `tag` option is
-the only one required. The callback will be passed an error when the
-install fails. No other value is provided to the callback.
-
-The function returns no value.
+Options may contain values specified below. The callback will be passed
+an error when the install fails. No other value is provided to the
+callback. The `pscRelease` function call returns no value.
 
 ## Options
 
 ### tag
 
 Type: `String`
+Default: `null`
 
-Required tag of the purescript release to install.
+Optional tag of the purescript release to install. The latest release of
+PureScript is installed when the value is empty.
 
 ### github
 
